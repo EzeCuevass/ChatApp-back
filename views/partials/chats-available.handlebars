@@ -1,0 +1,8 @@
+<div id="chat-data">
+{{#each session.groups}}
+
+<a href="/group/:id?id={{_id}}">
+    <h3 class="group-row" data-id="{{_id}}">{{name}}</h3>
+</a>
+{{/each}}
+</div>

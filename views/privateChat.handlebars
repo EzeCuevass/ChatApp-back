@@ -1,0 +1,132 @@
+<header>
+    <div class="logo">
+        {{!-- Svg Logo --}}
+        <svg version="1.0" xmlns="http://www.w3.org/2000/svg"
+            width="1280.000000pt" height="720.000000pt" viewBox="0 0 1280.000000 720.000000"
+            preserveAspectRatio="xMidYMid meet">
+            <metadata>
+            Created by potrace 1.15, written by Peter Selinger 2001-2017
+            </metadata>
+            <g transform="translate(0.000000,720.000000) scale(0.100000,-0.100000)"
+            fill="#A62639" stroke="none">
+            <path d="M6255 6844 c-540 -35 -1107 -229 -1555 -532 -473 -320 -848 -752
+            -1091 -1256 -133 -276 -216 -536 -273 -856 -43 -240 -52 -602 -22 -880 40
+            -374 177 -822 362 -1188 l53 -103 -123 -367 c-68 -202 -191 -570 -274 -818
+            -84 -249 -152 -459 -152 -469 0 -9 13 -22 29 -28 26 -10 29 -14 24 -45 -6 -32
+            -5 -34 18 -27 41 13 936 298 1314 420 198 63 368 115 378 115 9 0 52 -17 95
+            -39 366 -184 756 -294 1171 -332 164 -14 498 -7 659 16 954 132 1766 659 2266
+            1468 163 264 318 632 401 952 79 307 117 688 96 982 -54 781 -356 1473 -881
+            2017 -509 527 -1157 853 -1895 952 -108 14 -482 26 -600 18z m391 -684 c357
+            -29 650 -108 959 -259 419 -206 770 -514 1030 -906 200 -301 323 -625 371
+            -979 23 -168 23 -508 0 -680 -163 -1209 -1161 -2141 -2372 -2217 -427 -26
+            -824 44 -1212 214 -107 47 -284 143 -339 183 -17 13 -39 24 -49 24 -9 0 -222
+            -65 -472 -145 -250 -80 -456 -145 -457 -143 -2 2 62 197 141 433 79 237 144
+            442 144 458 0 16 -18 53 -44 90 -418 599 -554 1426 -351 2127 45 152 82 245
+            155 390 200 391 505 732 880 982 473 316 1064 472 1616 428z"/>
+            <path d="M5323 5236 c-23 -7 -56 -23 -75 -34 -51 -32 -199 -190 -245 -262
+            -147 -229 -180 -534 -92 -832 67 -225 149 -397 299 -629 190 -292 313 -450
+            510 -653 296 -305 545 -476 927 -635 282 -118 490 -185 607 -197 81 -8 258 20
+            362 58 144 52 309 168 373 262 64 96 130 313 138 457 l6 95 -31 36 c-22 24
+            -112 78 -294 176 -432 232 -487 254 -555 218 -17 -8 -81 -73 -141 -143 -178
+            -207 -215 -243 -245 -243 -38 0 -287 127 -403 205 -135 92 -223 166 -334 281
+            -132 137 -275 333 -355 486 l-18 36 72 79 c95 101 134 162 172 268 39 108 37
+            141 -20 290 -51 133 -92 243 -163 434 -58 157 -101 221 -161 240 -57 17 -287
+            22 -334 7z"/>
+            </g>
+            </svg>
+        <h1>ChatApp</h1>
+        </div>
+        {{#if session}}
+        <div class="user-loged">
+            <button id="dialogCreateGroup" class="buttons">Crear grupo</button>
+            <dialog id="createGroup">
+                <p>Crear grupo</p>
+                <form action="/group/createGroup" method="POST">
+                    <input type="text" id="useradmin" name="useradmin" style="visibility: hidden; width:0; height:0" value="{{session.id}}">
+                    <input type="text" name="name" id="name" placeholder="Nombre del grupo" class="inputsession">
+                    <button id="buttonCreateGroup" type="submit" class="buttons">Crear grupo</button>
+                </form>
+                <button id="closeCreateGroup" class="buttons">Close</button>
+            </dialog>
+            <p class="usercolor">{{session.username}}</p>
+            <form action="/users/logout" method="GET">
+                <button id="logout-button" class="buttons" type="submit">Log out</button>
+            </form>
+        </div>
+        {{else}}
+        <div id="second-box">
+                <button id="dialogLog" class="buttons">Log In</button>
+                <dialog id="login">
+                    <p>Login</p>
+                    <form action="/users/login" method="POST">
+                        <input type="text" name="username" id="username" class="inputsession">
+                        <input type="password" name="password" id="password" class="inputsession">
+                        <button id="buttonLogin" type="submit" class="buttons">Login</button>
+                    </form>
+                    <button id="closeLog" class="buttons">Close</button>
+                </dialog>
+                <button id="dialogRegister" class="buttons">Register</button>
+                <dialog id="register">
+                    <p>Register</p>
+                    <form action="/users/register" method="POST">
+                        <input type="text" name="fullname" id="fullname" placeholder="fullname" class="inputsession">
+                        <input type="text" name="username" id="username" placeholder="username" class="inputsession">
+                        <input type="text" name="email" id="email" placeholder="email" class="inputsession">
+                        <input type="password" name="password" id="password" placeholder="password" class="inputsession">
+                        <input type="text" name="photo" id="photo" placeholder="Photo URL" class="inputsession">
+                        <button id="buttonRegister" type="submit" class="buttons">Register</button>
+                    </form>
+                    <button id="closeRegister" class="buttons">Close</button>
+                </dialog>
+            </div>
+        {{/if}}
+    </header>
+    <main>
+        <div class="chats-available">
+            <div class="group">
+                <a href="/"><h3>General chat</h3></a>
+                {{>chats-available}}
+            </div>
+        </div>
+        <div class="on-chat">
+            <div class="content">
+                <div class="chat-details">
+                     {{!-- Name of the user  --}}
+                    <h2>El nombre del otro contacto</h2>
+                </div>
+                <!-- Here we display the messages -->
+                <div class="box-messages" id="box-messages-private"></div>
+            </div>
+            <!-- Here we send the messages -->
+            <div class="content-message-bar">
+                <div class="message-bar">
+                    <form id="formgroup">
+                        <input type="text" id="groupid" name="groupid" style="visibility: hidden; width:0; height:0" value="{{groupDetails._id}}">
+                        <input type="text" id="message" name="message" placeholder="Escribe un mensaje...">
+                        <input type="text" id="userid" name="userid" style="visibility: hidden; width:0; height:0" value="{{session.id}}">
+                        <button type="submit" id="button">
+                            <svg fill="#00000" height="800px" width="800px" version="1.1" id="Capa_1"
+                                xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                                viewBox="0 0 495.003 495.003" xml:space="preserve">
+                                <g id="XMLID_51_">
+                                    <path id="XMLID_53_" d="M164.711,456.687c0,2.966,1.647,5.686,4.266,7.072c2.617,1.385,5.799,1.207,8.245-0.468l55.09-37.616
+                l-67.6-32.22V456.687z" />
+                                    <path id="XMLID_52_" d="M492.431,32.443c-1.513-1.395-3.466-2.125-5.44-2.125c-1.19,0-2.377,0.264-3.5,0.816L7.905,264.422
+                c-4.861,2.389-7.937,7.353-7.904,12.783c0.033,5.423,3.161,10.353,8.057,12.689l125.342,59.724l250.62-205.99L164.455,364.414
+                l156.145,74.4c1.918,0.919,4.012,1.376,6.084,1.376c1.768,0,3.519-0.322,5.186-0.977c3.637-1.438,6.527-4.318,7.97-7.956
+                L494.436,41.257C495.66,38.188,494.862,34.679,492.431,32.443z" />
+                                </g>
+                            </svg>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer>
+       
+    </footer>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"
+        integrity="sha384-2huaZvOR9iDzHqslqwpR87isEmrfxqyWOF7hr7BY6KG0+hVKLoEXMPUJw3ynWuhO"
+        crossorigin="anonymous"></script>
+    <script src="/index.js"></script>
