@@ -36,7 +36,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 //CORS
 app.use(cors(
     {
-        origin: [process.env.MYFRONT_URL || "http://localhost:3000", process.env.FRONT_URL],
+        origin: [process.env.MYFRONT_URL , "http://192.168.100.74:3000" || "http://localhost:3000", process.env.FRONT_URL , "http://192.168.100.74:3000", "0.0.0.0"],
         methods: ["GET", "POST", "PUT", "DELETE"],
         credentials: true
     }
@@ -80,7 +80,7 @@ app.use('/privatechat',privateRouter)
 const socketServer = new Server(httpServer, {
     cors: {
         // origin: [process.env.MYFRONT_URL, process.env.FRONT_URL],
-        origin: [process.env.MYFRONT_URL , "http://192.168.100.74:3000" || "http://localhost:3000", process.env.FRONT_URL , "http://192.168.100.74:3000" ],
+        origin: [process.env.MYFRONT_URL , "http://192.168.100.74:3000" || "http://localhost:3000", process.env.FRONT_URL , "http://192.168.100.74:3000", "0.0.0.0"],
         methods: ["GET", "POST", "PUT", "DELETE"],
         allowedHeaders: ["Content-Type", "Authorization"],
         credentials: true
@@ -142,12 +142,21 @@ socketServer.on("connection", async(socket)=>{
         const lastmessage = await groupmanager.getLastMessageInGroup(id)
         socket.emit('lastmessagefrontgroup', {lastmessage, id})
     })
+    socket.on('setusername', ({ username }) => {
+        console.log(`User set username: ${username}`);
+        socket.data.username = username;
+    });
+
+
     // Update the token and user data in the socket 
-    socket.on('updateuser', async (user) => {
-        const username = user.username
-        const logedUser = await usermanager.logUser(username)
+    socket.on('updateusers', async () => {
+        for (let [id,s] of socketServer.sockets.sockets) {
+            const username = s.data.username          
+            const logedUser = await usermanager.logUser(username)
+            console.log(logedUser);
+            
         let groupsarray = []
-            if (logedUser.groups && logedUser.groups.length > 0) {
+            if (logedUser && logedUser.groups && logedUser.groups.length > 0) {
                 const groupIds = logedUser.groups
                     .map(g => g.group ? g.group : g)
                     .filter(id => id) 
@@ -165,7 +174,7 @@ socketServer.on("connection", async(socket)=>{
             logedUser._id,
             groupsarray
         )
-        socket.emit('userupdated', { 
+        s.emit('userupdated', { 
             token, 
             user: {
                 fullname: logedUser.fullname,
@@ -176,5 +185,7 @@ socketServer.on("connection", async(socket)=>{
                 groups: groupsarray
             } 
         })
+        }
+        
     })
 })

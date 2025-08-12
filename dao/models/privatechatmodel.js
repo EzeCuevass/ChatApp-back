@@ -7,7 +7,8 @@ const privateChatSchema = new Schema({
     messages: [
         {
             message: { type: String, required: true },
-            user: { type: Schema.Types.ObjectId, ref: "user" }
+            user: { type: Schema.Types.ObjectId, ref: "user" },
+            timestamp: {type: Date, default: Date.now}
         }
     ]})
 export const privateChatModel = model("privateChat", privateChatSchema)
