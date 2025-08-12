@@ -21,11 +21,11 @@ const initializePassport = () => {
         async (req, username, password, done) => {
         try {
             let datos = {
-                fullname: req.body.fullname,
-                username: req.body.username,
-                email: req.body.email,
+                fullname: req.body.fullname.trim(),
+                username: req.body.username.trim(),
+                email: req.body.email.trim(),
                 password: createHash(req.body.password),
-                photo: req.body.photo,
+                photo: req.body.photo.trim(),
             };
             const usuarioregistrado = await userManager.registerUser(datos)
             return done(null, usuarioregistrado);
@@ -43,7 +43,7 @@ const initializePassport = () => {
     async (req,username,password,done)=>{
         try {
             const {username,password} = req.body
-            const logedUser = await userManager.logUser(username)
+            const logedUser = await userManager.logUser(username.trim())
             if (!logedUser){
                 return done(null,false)
             }

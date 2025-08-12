@@ -7,7 +7,7 @@ const groupManager = new GroupDao();
 
 export const register = async (req,res) => {
     try {
-        res.redirect("/")
+        res.status(200).json({message: "User registered successfully"})
     } catch (error) {
         res.json(error)
         console.log(error);
