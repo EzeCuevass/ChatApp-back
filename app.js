@@ -153,39 +153,36 @@ socketServer.on("connection", async(socket)=>{
         for (let [id,s] of socketServer.sockets.sockets) {
             const username = s.data.username          
             const logedUser = await usermanager.logUser(username)
-            console.log(logedUser);
-            
-        let groupsarray = []
+            let groupsarray = []
             if (logedUser && logedUser.groups && logedUser.groups.length > 0) {
                 const groupIds = logedUser.groups
                     .map(g => g.group ? g.group : g)
-                    .filter(id => id) 
+                    .filter(id => id)
                     .map(id => id.toString())
-                    .filter(id => id.length==24);
-                if (groupIds.length > 0) {
-                    groupsarray = await groupmanager.getGroupsById(groupIds)
+                    .filter(id => id.length == 24);
+                    if (groupIds.length > 0) {
+                        groupsarray = await groupmanager.getGroupsById(groupIds)
+                    }
                 }
-            }
-        const token = generateToken(
-            logedUser.fullname,
-            logedUser.username,
-            logedUser.email,
-            logedUser.photo,
-            logedUser._id,
-            groupsarray
-        )
-        s.emit('userupdated', { 
-            token, 
-            user: {
-                fullname: logedUser.fullname,
-                username: logedUser.username,
-                email: logedUser.email,
-                photo: logedUser.photo,
-                id: logedUser._id,
-                groups: groupsarray
-            } 
-        })
+            const token = generateToken(
+                logedUser.fullname,
+                logedUser.username,
+                logedUser.email,
+                logedUser.photo,
+                logedUser._id,
+                groupsarray
+            )
+            s.emit('userupdated', { 
+                token, 
+                user: {
+                    fullname: logedUser.fullname,
+                    username: logedUser.username,
+                    email: logedUser.email,
+                    photo: logedUser.photo,
+                    id: logedUser._id,
+                    groups: groupsarray
+                } 
+            })
         }
-        
     })
 })

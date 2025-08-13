@@ -25,7 +25,9 @@ export default class MessageDao {
                 photo:1,
                 fullname:1
             })
-            const mensaje = await mensajes[Object.keys(mensajes)[Object.keys(mensajes).length - 1]].message
+            const mensaje = await mensajes[Object.keys(mensajes)[Object.keys(mensajes).length - 1]]
+            console.log(mensaje);
+            
             return mensaje
         } catch (error) {
             console.log(error);
