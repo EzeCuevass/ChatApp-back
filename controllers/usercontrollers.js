@@ -49,6 +49,8 @@ export const login = async (req,res) => {
                 secure:false,
                 httpOnly:true
             })
+            console.log("nashei");
+            
             res.status(200).json({
                 status: 200,
                 message: "User logged in",

@@ -143,7 +143,6 @@ socketServer.on("connection", async(socket)=>{
         socket.emit('lastmessagefrontgroup', {lastmessage, id})
     })
     socket.on('setusername', ({ username }) => {
-        console.log(`User set username: ${username}`);
         socket.data.username = username;
     });
 
