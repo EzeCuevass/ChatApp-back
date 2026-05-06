@@ -1,6 +1,7 @@
 import UsersDao from "../dao/users.dao.js";
 import { generateToken } from "../utils.js";
 import GroupDao from "../dao/group.dao.js";
+import jwt from "jsonwebtoken";
 
 const usermanager = new UsersDao();
 const groupManager = new GroupDao();
@@ -66,7 +67,8 @@ export const logout = async (req,res) => {
         try {
             console.log("logout");
             req.session.destroy()
-            res.clearCookie()
+            res.clearCookie("currentUser")
+            res.status(200).json({ message: "Logged out" })
         } catch (error) {
             console.log(error);
             res.json(error)
@@ -96,6 +98,59 @@ export const searchUsers = async (req,res) => {
             console.log(error);
         }
     }
+export const getCurrentUser = async (req, res) => {
+    try {
+        const token = req.cookies.currentUser
+        if (!token) {
+            return res.status(401).json({ error: "No session" })
+        }
+        const decoded = jwt.verify(token, process.env.PRIVATE_KEY_JWT)
+        const user = await usermanager.getById(decoded.sub)
+        if (!user) {
+            return res.status(401).json({ error: "User not found" })
+        }
+        let groupsarray = []
+        if (user.groups && user.groups.length > 0) {
+            const groupIds = user.groups
+                .map(g => {
+                    if (g.group && typeof g.group === 'object' && g.group._id) {
+                        return g.group._id.toString()
+                    }
+                    if (g.group && typeof g.group === 'object') {
+                        return g.group.toString()
+                    }
+                    return g.group ? g.group : g
+                })
+                .filter(id => id && id.length == 24)
+            if (groupIds.length > 0) {
+                groupsarray = await groupManager.getGroupsById(groupIds)
+            }
+        }
+        const newToken = generateToken(
+            user.fullname,
+            user.username,
+            user.email,
+            user.photo,
+            user._id,
+            groupsarray
+        )
+        res.status(200).json({
+            user: {
+                fullname: user.fullname,
+                username: user.username,
+                email: user.email,
+                photo: user.photo,
+                id: user._id,
+                groups: groupsarray
+            },
+            token: newToken
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(401).json({ error: "Invalid session" })
+    }
+}
+
 export const getGroups = async(req,res) => {
         try {
             if (req.session.user.id){

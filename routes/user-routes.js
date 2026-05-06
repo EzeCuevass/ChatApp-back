@@ -30,4 +30,8 @@ router.get('/searchUsers',
 router.get('/getgroups', 
     userController.getGroups
 )
+// Get current user from cookie (session restore)
+router.get('/current',
+    userController.getCurrentUser
+)
 export default router
