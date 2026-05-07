@@ -39,7 +39,8 @@ export default class UsersDao{
     }
     async searchUsers(username){
         try {
-            const regex = new RegExp('^' + username, 'i');
+            const escaped = username.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+            const regex = new RegExp('^' + escaped, 'i');
             const finduser = await userModel.find({username:regex}).populate("groups.group", {
                 "useradmin":1,
                 "name":1,

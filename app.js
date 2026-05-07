@@ -150,10 +150,12 @@ socketServer.on("connection", async(socket)=>{
     // Update the token and user data in the socket 
     socket.on('updateusers', async () => {
         for (let [id,s] of socketServer.sockets.sockets) {
-            const username = s.data.username          
+            const username = s.data.username
+            if (!username) continue
             const logedUser = await usermanager.logUser(username)
+            if (!logedUser) continue
             let groupsarray = []
-            if (logedUser && logedUser.groups && logedUser.groups.length > 0) {
+            if (logedUser.groups && logedUser.groups.length > 0) {
                 const groupIds = logedUser.groups
                     .map(g => g.group ? g.group : g)
                     .filter(id => id)

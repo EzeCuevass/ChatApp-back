@@ -44,7 +44,7 @@ export const postMessageInGroup = async (req,res) => {
 
 export const getGroupById = async (req,res) => {
     try {
-        const {id} = req.query
+        const {id} = req.params
         const groupDetails = await groupManager.getGroupById(id)
         res.status(200).json(groupDetails)
     } catch (error) {
@@ -62,7 +62,7 @@ export const getLastMessageInGroup = async (req,res) => {
 }
 export const deleteGroup = async (req,res) => {
     try {
-        const {id} = req.query
+        const {id} = req.params
         await groupManager.deleteGroup(id)
         res.status(200).json("Group deleted successfully")
     } catch (error) {

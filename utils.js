@@ -36,7 +36,7 @@ export const generateToken = (fullname,username,email,photo,id,groups) =>{
     )
 }
 export const authToken = (req, res, next) => {
-    const token = req.cookies.currentUser || req.headers.currentUser || req.headers['currentUser'] || req.cookies.currentuser || req.headers.currentuser || req.headers['currentuser'];
+    const token = req.headers.currentUser || req.headers['currentUser'] || req.cookies.currentUser || req.headers.currentuser || req.cookies.currentuser || req.headers['currentuser'];
     if(!token) {
         return res.redirect('/')
     }
@@ -53,29 +53,18 @@ export const authToken = (req, res, next) => {
 }
 export function groupFunctions() {
     return async (req, res, next) => {
-        const idgroup = req.query.id ? req.query.id : req.body.idgroup
-        console.log(req.query);
+        const idgroup = (req.params.id || req.query.id || req.body.idgroup || "").toString()
         
-        let groupsarray = []
-       
-        if (req.session.user || req.user){
-            
-            if (req.user.groups) {                
-                for (const group of req.user.groups){
-                    groupsarray.push(group._id)
-                }
-            }
-            if (!groupsarray.includes(idgroup)){ 
-                console.log("[utils.js] [groupFunctions] User is not in group");
-                
-                return res.redirect('/')
-            }
-        } else {
-            console.log("[utils.js] [groupFunctions] No user session found");
-            
+        if (!req.session.user && !req.user){
             return res.redirect('/')
         }
-        console.log("[utils.js] [groupFunctions] User is in group");
+        
+        if (req.user.groups) {
+            const hasGroup = req.user.groups.some(g => g._id.toString() === idgroup)
+            if (!hasGroup){
+                return res.redirect('/')
+            }
+        }
           
         next();
     };
