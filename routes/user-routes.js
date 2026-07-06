@@ -6,17 +6,30 @@ import * as userController from "../controllers/usercontrollers.js";
 const router = Router() 
 
 // Register
-router.post("/register", 
-    passport.authenticate('register', {failureMessage:"User already exists"}),
-    userController.register)
+router.post("/register", (req, res, next) => {
+    passport.authenticate('register', (err, user, info) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (!user) return res.status(400).json({ error: "User already exists" });
+        req.user = user;
+        next();
+    })(req, res, next);
+}, userController.register)
 // Login
-router.post('/login',
-    passport.authenticate('login', {failureMessage:"User or password incorrect"}),
-    userController.login
-)
+router.post('/login', (req, res, next) => {
+    passport.authenticate('login', (err, user, info) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (!user) return res.status(401).json({ error: "User or password incorrect" });
+        req.user = user;
+        next();
+    })(req, res, next);
+}, userController.login)
 // Log out
 router.get('/logout',
     userController.logout
+)
+// Upload photo
+router.post('/upload-photo',
+    userController.uploadPhoto
 )
 // Search User
 router.get('/search',

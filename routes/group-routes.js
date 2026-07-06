@@ -34,4 +34,9 @@ router.delete('/:id',
     groupFunctions(),
     groupController.deleteGroup
 )
+// Leave group
+router.put('/leave/:groupId',
+    authToken,
+    groupController.leaveGroup
+)
 export default router

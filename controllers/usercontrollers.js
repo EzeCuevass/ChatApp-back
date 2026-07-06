@@ -1,10 +1,50 @@
 import UsersDao from "../dao/users.dao.js";
 import { generateToken } from "../utils.js";
 import GroupDao from "../dao/group.dao.js";
+import PrivateChatDao from "../dao/privatechat.dao.js";
 import jwt from "jsonwebtoken";
+import multer from "multer";
+import path from "path";
+import __dirname from "../utils.js";
 
 const usermanager = new UsersDao();
 const groupManager = new GroupDao();
+const privateChatManager = new PrivateChatDao();
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, path.join(__dirname, "public", "uploads"));
+    },
+    filename: (req, file, cb) => {
+        const unique = Date.now() + "-" + Math.round(Math.random() * 1e9);
+        cb(null, unique + path.extname(file.originalname));
+    }
+});
+const upload = multer({
+    storage,
+    limits: { fileSize: 2 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        const allowed = /jpeg|jpg|png|gif|webp/;
+        const ok = allowed.test(path.extname(file.originalname).toLowerCase()) && allowed.test(file.mimetype);
+        cb(null, ok);
+    }
+}).single("photo");
+
+export const uploadPhoto = (req, res) => {
+    upload(req, res, (err) => {
+        if (err instanceof multer.MulterError) {
+            return res.status(400).json({ error: err.message });
+        }
+        if (err) {
+            return res.status(400).json({ error: "Formato no permitido" });
+        }
+        if (!req.file) {
+            return res.status(400).json({ error: "No se subió ninguna imagen" });
+        }
+        const url = `/uploads/${req.file.filename}`;
+        res.json({ url });
+    });
+};
 
 export const register = async (req,res) => {
     try {
@@ -28,13 +68,15 @@ export const login = async (req,res) => {
                     groupsarray = await groupManager.getGroupsById(groupIds)
                 }
             }
-            req.session.user = {
+            const privateChats = await privateChatManager.getChatsByUserId(loguser._id.toString())
+            const userData = {
                 fullname: loguser.fullname,
                 username: loguser.username,
                 email: loguser.email,
                 photo: loguser.photo,
                 id: loguser._id,
-                groups: groupsarray
+                groups: groupsarray,
+                privateChats: privateChats
             }
             const token = generateToken(
                 loguser.fullname,
@@ -42,7 +84,8 @@ export const login = async (req,res) => {
                 loguser.email,
                 loguser.photo,
                 loguser._id,
-                groupsarray
+                groupsarray,
+                privateChats
             )
             res.cookie("currentUser", token, {
                 maxAge:24*60*60*60,
@@ -50,12 +93,11 @@ export const login = async (req,res) => {
                 secure:false,
                 httpOnly:true
             })
-            console.log("nashei");
             
             res.status(200).json({
                 status: 200,
                 message: "User logged in",
-                user: req.session.user,
+                user: userData,
                 token: token
             })
         } catch (error) {
@@ -65,8 +107,6 @@ export const login = async (req,res) => {
 }
 export const logout = async (req,res) => {
         try {
-            console.log("logout");
-            req.session.destroy()
             res.clearCookie("currentUser")
             res.status(200).json({ message: "Logged out" })
         } catch (error) {
@@ -126,13 +166,15 @@ export const getCurrentUser = async (req, res) => {
                 groupsarray = await groupManager.getGroupsById(groupIds)
             }
         }
+        const privateChats = await privateChatManager.getChatsByUserId(user._id.toString())
         const newToken = generateToken(
             user.fullname,
             user.username,
             user.email,
             user.photo,
             user._id,
-            groupsarray
+            groupsarray,
+            privateChats
         )
         res.status(200).json({
             user: {
@@ -141,7 +183,8 @@ export const getCurrentUser = async (req, res) => {
                 email: user.email,
                 photo: user.photo,
                 id: user._id,
-                groups: groupsarray
+                groups: groupsarray,
+                privateChats: privateChats
             },
             token: newToken
         })
@@ -153,13 +196,14 @@ export const getCurrentUser = async (req, res) => {
 
 export const getGroups = async(req,res) => {
         try {
-            if (req.session.user.id){
-                const user = await usermanager.getById(req.session.user.id)
+            if (req.user && req.user.sub){
+                const user = await usermanager.getById(req.user.sub)
                 res.json(user)
             } else {
-                res.redirect('/')
+                res.status(401).json({ error: "Unauthorized" })
             }
         } catch (error) {
             console.log(error);
+            res.status(500).json({ error: error.message })
         }
     }

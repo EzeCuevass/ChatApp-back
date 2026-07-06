@@ -1,39 +1,48 @@
 import PrivateChatDao from "../dao/privatechat.dao.js";
 
-
-const privateChatManager = new PrivateChatDao();
+const manager = new PrivateChatDao();
 
 export const getPrivateChat = async (req, res) => {
     try {
-        const { userId } = req.query;
-        console.log(userId);
-        
-        const myid = req.session.user.id;
-        const privateChat = await privateChatManager.getPrivateChatById(myid, userId);
+        const otherUserId = req.params.userId;
+        const myid = req.user.sub;
+
+        const privateChat = await manager.getPrivateChatById(myid, otherUserId);
         if (!privateChat) {
-            const newPrivateChat = await privateChatManager.createPrivateChat([myid, userId]);
-            res.json(newPrivateChat);
-        } else {
-            res.json(privateChat);
+            const newChat = await manager.createPrivateChat([myid, otherUserId]);
+            const full = await manager.getPrivateChatById(myid, otherUserId);
+            return res.json(full);
         }
-        
+        res.json(privateChat);
     } catch (error) {
         console.log(error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).json({ error: error.message });
     }
-}
+};
+
 export const addMessageToPrivateChat = async (req, res) => {
     try {
-        const id  = req.params.id;
-        const myid = req.session.user.id;
-        const {message}  = req.body;
+        const chatId = req.params.chatId;
+        const myid = req.user.sub;
+        const { message } = req.body;
+        if (!message) return res.status(400).json({ error: "Falta el mensaje" });
 
-        const privateChat = await privateChatManager.getPrivateChatById(myid, id);
-
-        const privateChatMessage = await privateChatManager.addMessageToPrivateChat(privateChat, message, myid);
-        res.json(privateChatMessage);
+        await manager.addMessageToPrivateChat(chatId, message, myid);
+        const updated = await manager.getFullChat(chatId);
+        res.json(updated);
     } catch (error) {
         console.log(error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).json({ error: error.message });
     }
-}
+};
+
+export const getMyPrivateChats = async (req, res) => {
+    try {
+        const myid = req.user.sub;
+        const chats = await manager.getChatsByUserId(myid);
+        res.json(chats);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: error.message });
+    }
+};

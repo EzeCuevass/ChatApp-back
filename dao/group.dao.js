@@ -95,6 +95,22 @@ export default class GroupDao{
             console.log(error);
         }
     }
+    async removeMemberFromGroup(memberId, groupId){
+        try {
+            await this.model.findByIdAndUpdate(
+                groupId,
+                {$pull: {users: {user: memberId}}}
+            )
+            await userModel.findByIdAndUpdate(
+                memberId,
+                {$pull: {groups: {group: groupId}}}
+            )
+            return "Member removed"
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     async deleteGroup(id){
         try {
             await this.model.findByIdAndDelete(id)

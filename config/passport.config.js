@@ -42,23 +42,12 @@ const initializePassport = () => {
         },
     async (req,username,password,done)=>{
         try {
-            const {username,password} = req.body
             const logedUser = await userManager.logUser(username.trim())
             if (!logedUser){
-                return done(null,false)
+                return done(null, false)
             }
             if (!comparePassword(password, logedUser.password)){
                 return done(null, false)
-            }
-            if (username == logedUser.username && comparePassword(password, logedUser.password)){
-                req.session.user = {
-                    username: logedUser.username,
-                    fullname: logedUser.fullname,
-                    email: logedUser.email,
-                    photo: logedUser.photo,
-                    groups: logedUser.groups
-                }
-                return done(null,logedUser)
             }
             return done(null,logedUser)
         } catch (error) {

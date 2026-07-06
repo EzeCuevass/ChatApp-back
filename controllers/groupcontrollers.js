@@ -60,6 +60,18 @@ export const getLastMessageInGroup = async (req,res) => {
         console.log(error);
     }
 }
+export const leaveGroup = async (req,res) => {
+    try {
+        const myId = req.user.sub;
+        const { groupId } = req.params;
+        await groupManager.removeMemberFromGroup(myId, groupId);
+        res.status(200).json({ message: "Has salido del grupo" });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: error.message });
+    }
+}
+
 export const deleteGroup = async (req,res) => {
     try {
         const {id} = req.params

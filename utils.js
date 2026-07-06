@@ -18,14 +18,15 @@ export function comparePassword(password, hashedPassword){
 }
 
 // JWT
-export const generateToken = (fullname,username,email,photo,id,groups) =>{
+export const generateToken = (fullname,username,email,photo,id,groups,privateChats = []) =>{
     const payload = {
         full_name: fullname,
         username: username,
         email: email,
         photo: photo,
         sub:id,
-        groups: groups
+        groups: groups,
+        privateChats: privateChats
     }
     return jwt.sign(
         payload, 
@@ -36,33 +37,30 @@ export const generateToken = (fullname,username,email,photo,id,groups) =>{
     )
 }
 export const authToken = (req, res, next) => {
-    const token = req.headers.currentUser || req.headers['currentUser'] || req.cookies.currentUser || req.headers.currentuser || req.cookies.currentuser || req.headers['currentuser'];
-    if(!token) {
-        return res.redirect('/')
+    const token = req.headers.currentuser || req.cookies.currentuser;
+    if (!token) {
+        return res.status(401).json({ error: "Unauthorized" });
     }
     try {
-        const decoded = jwt.verify(token, process.env.PRIVATE_KEY_JWT)
-        req.user = decoded
-        console.log("[utils.js] [authToken] User authenticated successfully");
-        
+        const decoded = jwt.verify(token, process.env.PRIVATE_KEY_JWT);
+        req.user = decoded;
         next();
     } catch (error) {
-        console.log(error);
-        res.status(400).json(error)
+        return res.status(401).json({ error: "Invalid token" });
     }
 }
 export function groupFunctions() {
     return async (req, res, next) => {
-        const idgroup = (req.params.id || req.query.id || req.body.idgroup || "").toString()
+        const idgroup = (req.params.id || req.query.id || req.body.idgroup || "").toString();
         
-        if (!req.session.user && !req.user){
-            return res.redirect('/')
+        if (!req.user) {
+            return res.status(401).json({ error: "Unauthorized" });
         }
         
         if (req.user.groups) {
-            const hasGroup = req.user.groups.some(g => g._id.toString() === idgroup)
-            if (!hasGroup){
-                return res.redirect('/')
+            const hasGroup = req.user.groups.some(g => g._id.toString() === idgroup);
+            if (!hasGroup) {
+                return res.status(403).json({ error: "Forbidden" });
             }
         }
           
