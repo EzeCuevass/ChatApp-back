@@ -1,25 +1,33 @@
 # 💬 ChatApp Back
 
 Backend de ChatApp desarrollado en Node.js y JavaScript.  
-Expone endpoints para autenticación, gestión de chats y mensajes, y sirve como API para el frontend.
+Expone endpoints REST y eventos en tiempo real para autenticación, chat global, chats grupales y chats privados.
 
 > Repositorio frontend relacionado:  
 > https://github.com/EzeCuevass/ChatApp-Front
 
 ---
 
-## 📦 Stack
+## 🛠️ Tecnologías
 
-- JavaScript (100%)
-- Node.js
-- Express
-- MongoDB (por variable `MONGO_URI`)
-- Arquitectura por capas con:
-  - `routes/`
-  - `controllers/`
-  - `dao/`
-  - `db/`
-  - `config/`
+- **JavaScript (Node.js)**
+- **Express**
+- **MongoDB + Mongoose**
+- **Socket.IO** (comunicación en tiempo real)
+- **Passport** (`passport-local`, `passport-jwt`) para autenticación
+- **JWT** (`jsonwebtoken`)
+- **bcrypt** (hash de contraseñas)
+- **Multer** (subida de imágenes/perfiles)
+- **cookie-parser**
+- **CORS**
+- **dotenv**
+- **Nodemon** (entorno de desarrollo)
+- **ES Modules** (`"type": "module"`)
+
+### Dependencias instaladas adicionales
+- `express-session`
+- `connect-mongo`
+- `express-handlebars`
 
 ---
 
@@ -30,13 +38,27 @@ ChatApp-back/
 ├── app.js
 ├── utils.js
 ├── config/
+│   └── passport.config.js
 ├── controllers/
+│   ├── usercontrollers.js
+│   ├── messagecontrollers.js
+│   ├── groupcontrollers.js
+│   └── privatechatcontrollers.js
 ├── dao/
+│   ├── users.dao.js
+│   ├── message.dao.js
+│   ├── group.dao.js
+│   └── privatechat.dao.js
 ├── db/
+│   └── connect.js
 ├── routes/
+│   ├── user-routes.js
+│   ├── message-routes.js
+│   ├── group-routes.js
+│   └── private-chat-routes.js
 ├── public/
+│   └── uploads/
 ├── package.json
-├── package-lock.json
 └── .gitignore
 ```
 
@@ -46,7 +68,7 @@ ChatApp-back/
 
 - Node.js 18 o superior
 - npm 9 o superior
-- MongoDB configurado
+- MongoDB disponible
 
 ---
 
@@ -59,7 +81,7 @@ npm install
 npm run dev
 ```
 
-Si tu proyecto no tiene script `dev`, usa:
+También disponible:
 
 ```bash
 npm start
@@ -75,44 +97,101 @@ Crea un archivo `.env` en la raíz del backend con:
 MONGO_URI=tu_uri_de_mongodb
 SESSION_SECRET=tu_secret_de_sesion
 PRIVATE_KEY=tu_clave_privada
-MYFRONT_URL=http://localhost:5173
+MYFRONT_URL=http://localhost:3000
 ```
 
-### 📌 Descripción de variables
+### 📌 Importante sobre JWT en tu código actual
 
-- `MONGO_URI`: URI de conexión a MongoDB.
-- `SESSION_SECRET`: clave secreta para sesión/autenticación.
-- `PRIVATE_KEY`: clave privada para firmado/autenticación.
-- `MYFRONT_URL`: URL del frontend permitida (CORS).
+En el código se usa **`process.env.PRIVATE_KEY_JWT`** para firmar/verificar tokens (`utils.js`, `usercontrollers.js`, `passport.config.js`).
 
-> Nota: usar `PRIVATE_KEY` (con guion bajo), no `PRIVATE KEY` con espacio.
+Para evitar errores, usa también esta variable:
 
----
+```env
+PRIVATE_KEY_JWT=tu_clave_jwt
+```
 
-## 🔗 Integración con frontend
-
-Este backend está pensado para ser consumido por:
-
-- **Frontend:** `ChatApp-Front`
-- **Repo:** https://github.com/EzeCuevass/ChatApp-Front
+> Recomendación: unificar en el código a un solo nombre de variable (`PRIVATE_KEY` o `PRIVATE_KEY_JWT`) para evitar confusiones.
 
 ---
 
-## 🧪 Pruebas locales recomendadas
+## 🌐 CORS y credenciales
 
-- Registro / login de usuario
-- Creación y listado de chats
-- Envío y recuperación de mensajes
-- Validación de CORS con el frontend local (`MYFRONT_URL`)
+El servidor está configurado con `credentials: true` y orígenes permitidos incluyendo `MYFRONT_URL`, por lo que el frontend debe enviar cookies/credenciales correctamente.
+
+---
+
+## 🔌 Rutas principales REST
+
+### Mensajes (chat global)
+- `GET /` → obtiene mensajes globales
+- `POST /` → publica mensaje global
+- `GET /getLastMessage` → último mensaje global
+
+### Usuarios
+- `POST /users/register`
+- `POST /users/login`
+- `GET /users/logout`
+- `POST /users/upload-photo`
+- `GET /users/search?user=<username>`
+- `GET /users/searchUsers?user=<prefix>`
+- `GET /users/getgroups`
+- `GET /users/current`
+
+### Grupos
+- `POST /group/createGroup`
+- `PUT /group/addMembers`
+- `PUT /group/postMessageInGroup`
+- `GET /group/:id`
+- `GET /group/getLastMessageInGroup?id=<groupId>`
+- `PUT /group/leave/:groupId`
+- `DELETE /group/:id`
+
+### Chat privado
+- `POST /privatechat/:userId` (obtiene o crea chat)
+- `PUT /privatechat/:chatId/message`
+- `GET /privatechat/`
+
+---
+
+## ⚡ Eventos Socket.IO (tiempo real)
+
+- `setusername`
+- `getOnlineUsers`
+- `get`
+- `getgroup`
+- `sendmessage`
+- `sendmessagetogroup`
+- `getlastmessage`
+- `getlastmessageingroup`
+- `getprivatechat`
+- `sendmessagetoprivate`
+- `getprivatechatbyid`
+- `getlastmessageinprivate`
+- `updateusers`
+
+---
+
+## 🧪 Flujo recomendado de prueba local
+
+1. Levantar MongoDB
+2. Configurar `.env`
+3. Ejecutar backend con `npm run dev`
+4. Levantar frontend
+5. Probar:
+   - registro/login
+   - chat global
+   - creación de grupos y mensajes
+   - chat privado en tiempo real
+   - subida de foto de perfil
 
 ---
 
 ## 📌 Estado del proyecto
 
-Proyecto orientado a ejecución local (sin deploy público por ahora).
+Proyecto orientado a entorno local (sin deploy público por ahora).
 
 ---
 
 ## 👤 Autor
 
-**EzeCuevass**
+**EzeCuevas**
